@@ -7,7 +7,6 @@
 
 
 void writeInFiles(std::string& numResults, std::string& alphResults, tbb::concurrent_hash_map<std::basic_string<char>, int, StringHashCompare> &dict){
-
     std::ofstream myfile;
     try{
     myfile.open(numResults);

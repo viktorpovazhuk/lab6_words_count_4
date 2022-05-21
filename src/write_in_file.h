@@ -6,7 +6,6 @@
 #define SERIAL_WRITE_IN_FILE_H
 
 #include <bits/stdc++.h>
-#include "thread_safe_queue.h"
 #include <string>
 #include <map>
 #include <sstream>

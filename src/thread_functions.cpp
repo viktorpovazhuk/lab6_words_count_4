@@ -14,7 +14,7 @@ using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 using MapStrInt = std::map<std::string, int>;
 using BoundedMapQueue = tbb::concurrent_bounded_queue<MapStrInt>;
 using BoundedPathQueue = tbb::concurrent_bounded_queue<fs::path>;
-using BoundedRFQueue = tbb::concurrent_bounded_queue<ReadFile>;
+using BoundedRFQueue = tbb::concurrent_bounded_queue<file_info_t>;
 using StringTable = tbb::concurrent_hash_map<std::string, int, StringHashCompare>;
 
 //#define SERIAL
@@ -32,8 +32,23 @@ mergeDicts()
 
 Merge to global dict.*/
 
-void overworkFile(tbb::concurrent_bounded_queue<ReadFile> &filesContents, int &numOfWorkingIndexers, std::mutex& numOfWorkingIndexersMutex, tbb::concurrent_bounded_queue<std::map<std::basic_string<char>, int>> &dict,
-                  std::chrono::time_point<std::chrono::high_resolution_clock> &timeFindingFinish) {
+void merge_dicts(StringTable &globalDict, std::shared_ptr<MapStrInt> &dict) {
+    while (!dict->empty()) {
+        try {
+            StringTable::accessor a;
+            for (auto &i: *dict) {
+                globalDict.insert(a, i.first);
+                a->second += i.second;
+                a.release();
+            }
+        } catch (std::error_code &e) {
+            std::cerr << "Error code " << e << ". Occurred while merging dicts" << std::endl;
+        }
+    }
+}
+
+void index_file(tbb::concurrent_bounded_queue<file_info_t> &filesContents, int &numOfWorkingIndexers, std::mutex& numOfWorkingIndexersMutex, tbb::concurrent_bounded_queue<std::map<std::basic_string<char>, int>> &dict,
+                std::chrono::time_point<std::chrono::high_resolution_clock> &timeFindingFinish) {
 
     std::map<std::basic_string<char>, int> localDict;
 #ifdef SERIAL
@@ -41,12 +56,12 @@ void overworkFile(tbb::concurrent_bounded_queue<ReadFile> &filesContents, int &n
 #endif
 
     while (true) {
-        ReadFile file;
+        file_info_t file;
         try {
             filesContents.pop(file);
             if (file.content == "") {
                 // don't need mutex because queue is empty => other threads wait
-                ReadFile blank;
+                file_info_t blank;
                 timeFindingFinish = get_current_time_fenced();
                 filesContents.push(blank);
                 break;
@@ -75,7 +90,7 @@ void overworkFile(tbb::concurrent_bounded_queue<ReadFile> &filesContents, int &n
                 exit(26);
             }
             while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
-                ReadFile readFile;
+                file_info_t readFile;
                 std::string name = archive_entry_pathname(entry), ext;
                 int p = name.find('.');
                 ext = name.substr(p, name.size());
@@ -137,27 +152,4 @@ void overworkFile(tbb::concurrent_bounded_queue<ReadFile> &filesContents, int &n
         numOfWorkingIndexersMutex.unlock();
 
     }
-}
-
-
-void mergeDicts(StringTable &globalDict, BoundedMapQueue &dicts, TimePoint &timeMergingFinish) {
-    MapStrInt localDict;
-    dicts.pop(localDict);
-    while (!localDict.empty()) {
-        try {
-            StringTable::accessor a;
-            for (auto &i: localDict) {
-                globalDict.insert(a, i.first);
-                a->second += i.second;
-                a.release();
-            }
-        } catch (std::error_code &e) {
-            std::cerr << "Error code " << e << ". Occurred while merging dicts" << std::endl;
-        }
-        dicts.pop(localDict);
-    }
-    MapStrInt emptyDict;
-    dicts.push(std::move(emptyDict));
-
-    timeMergingFinish = get_current_time_fenced();
 }

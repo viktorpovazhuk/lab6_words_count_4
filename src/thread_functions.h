@@ -7,8 +7,7 @@
 
 #include "time_measurement.h"
 #include "StringHashCompare.h"
-#include "thread_safe_queue.h"
-#include "ReadFile.h"
+#include "file_info_t.h"
 #include "boost/locale.hpp"
 
 #include <tbb/concurrent_queue.h>
@@ -28,12 +27,9 @@
 #include <archive.h>
 #include <archive_entry.h>
 
+void index_file(tbb::concurrent_bounded_queue<file_info_t> &filesContents, int &numOfWorkingIndexers, std::mutex& numOfWorkingIndexersMutex, tbb::concurrent_bounded_queue<std::map<std::basic_string<char>, int>> &dict,
+                std::chrono::time_point<std::chrono::high_resolution_clock> &timeFindingFinish);
 
-
-
-void overworkFile(tbb::concurrent_bounded_queue<ReadFile> &filesContents, int &numOfWorkingIndexers, std::mutex& numOfWorkingIndexersMutex, tbb::concurrent_bounded_queue<std::map<std::basic_string<char>, int>> &dict,
-                  std::chrono::time_point<std::chrono::high_resolution_clock> &timeFindingFinish);
-
-void mergeDicts(tbb::concurrent_hash_map<std::string, int, StringHashCompare> &globalDict, tbb::concurrent_bounded_queue<std::map<std::string, int>> &dicts, std::chrono::time_point<std::chrono::high_resolution_clock> &timeMergingFinish);
+void merge_dicts(tbb::concurrent_hash_map<std::string, int, StringHashCompare> &globalDict, std::shared_ptr<std::map<std::string, int>> dict);
 
 #endif //SERIAL_THREAD_FUNCTIONS_H

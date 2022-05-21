@@ -64,11 +64,10 @@ include(cmake/CompilerWarnings.cmake)
 #! Project main executable source compilation
 add_executable(${PROJECT_NAME} src/main.cpp
         src/options_parser.cpp src/options_parser.h
-        src/thread_safe_queue.h
         src/time_measurement.h src/files_methods.h src/files_methods.cpp
         src/write_in_file.h src/write_in_file.cpp
         src/thread_functions.h src/thread_functions.cpp
-        src/errors.h src/ReadFile.h src/StringHashCompare.h)
+        src/errors.h src/file_info_t.h src/StringHashCompare.h)
 
 #add_executable(${TEST_EXECUTABLE} examples/tbb_counttick.cpp)
 

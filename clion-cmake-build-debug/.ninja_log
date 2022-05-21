@@ -1,3 +1,9 @@
 # ninja log v5
 2	1379	1652890046636178984	CMakeFiles/test_exe.dir/examples/tbb_graph.cpp.o	bc023d95fc6e30e
 1379	1477	1652890046736180578	test_exe	6a74913fd49a091
+3	1780	1653073192060970115	CMakeFiles/counter.dir/src/files_methods.cpp.o	8b85af31b4d84f85
+3	2308	1653073192588978806	CMakeFiles/counter.dir/src/write_in_file.cpp.o	67955e7f948e4e38
+0	2880	1653073193160988222	CMakeFiles/counter.dir/src/options_parser.cpp.o	214b5aa06d7cd8c7
+1781	3972	1653073194253006197	CMakeFiles/counter.dir/src/thread_functions.cpp.o	4fe5361800983b00
+0	4188	1653073194465009687	CMakeFiles/counter.dir/src/main.cpp.o	8ded8ba66967e844
+4188	4425	1653073194705013638	counter	8c234aa1db5845ac
