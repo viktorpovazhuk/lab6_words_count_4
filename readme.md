@@ -61,8 +61,7 @@ Writing=3329271
 Example of script run:
 
 ```shell
-[user@pc .]$ cd bin
-[user@pc bin]$ python ../scripts/main_pr.py
+[user@pc bin]$ python scripts/main_pr.py
 ```
 
 ### Important!
