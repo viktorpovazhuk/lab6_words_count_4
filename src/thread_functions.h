@@ -10,8 +10,9 @@
 #include "file_info_t.h"
 #include "boost/locale.hpp"
 
-#include <tbb/concurrent_queue.h>
-#include <tbb/concurrent_hash_map.h>
+#include <oneapi/tbb/concurrent_queue.h>
+#include <oneapi/tbb/concurrent_hash_map.h>
+#include <oneapi/tbb/flow_graph.h>
 
 #include <iostream>
 #include <filesystem>
@@ -27,9 +28,11 @@
 #include <archive.h>
 #include <archive_entry.h>
 
-void index_file(tbb::concurrent_bounded_queue<file_info_t> &filesContents, int &numOfWorkingIndexers, std::mutex& numOfWorkingIndexersMutex, tbb::concurrent_bounded_queue<std::map<std::basic_string<char>, int>> &dict,
-                std::chrono::time_point<std::chrono::high_resolution_clock> &timeFindingFinish);
+using MapStrInt = std::map<std::string, int>;
+using StringTable = tbb::concurrent_hash_map<std::basic_string<char>, int, StringHashCompare>;
 
-void merge_dicts(tbb::concurrent_hash_map<std::string, int, StringHashCompare> &globalDict, std::shared_ptr<std::map<std::string, int>> dict);
+MapStrInt index_file(std::shared_ptr<file_info_t> file);
+
+void merge_dicts(StringTable &globalDict, std::shared_ptr<MapStrInt> dict);
 
 #endif //SERIAL_THREAD_FUNCTIONS_H

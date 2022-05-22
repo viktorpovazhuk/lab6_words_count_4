@@ -16,18 +16,18 @@
 #include <utility>
 #include <oneapi/tbb/concurrent_queue.h>
 #include <oneapi/tbb/concurrent_hash_map.h>
-#include "oneapi/tbb/flow_graph.h"
+#include <oneapi/tbb/flow_graph.h>
 
 namespace fs = std::filesystem;
 
 using MapStrInt = std::map<std::string, int>;
-using StringTable = oneapi::tbb::concurrent_hash_map<string, int, StringHashCompare>;
+using StringTable = tbb::concurrent_hash_map<string, int, StringHashCompare>;
 
 using read_files_node_t = tbb::flow::multifunction_node<std::shared_ptr<fs::path>, std::tuple<std::shared_ptr<file_info_t>, tbb::flow::continue_msg>>;
 using index_files_node_t = tbb::flow::multifunction_node<std::shared_ptr<file_info_t>, std::tuple<std::shared_ptr<MapStrInt>, tbb::flow::continue_msg>>;
 using merge_dicts_node_t = tbb::flow::function_node<std::shared_ptr<MapStrInt>, tbb::flow::continue_msg>;
 
-MapStrInt index_file(std::shared_ptr<file_info_t> file);
+
 
 int main(int argc, char *argv[]) {
     string configFilename;
@@ -83,6 +83,7 @@ int main(int argc, char *argv[]) {
         std::ofstream MyFile(fa);
         MyFile.close();
     }
+    mkdir("../results/", 0777);
 
     boost::locale::generator gen;
     std::locale::global(gen("en_US.UTF-8"));
