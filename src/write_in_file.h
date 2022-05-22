@@ -12,8 +12,8 @@
 #include <fstream>
 #include <algorithm>
 #include <locale>
-#include <tbb/concurrent_queue.h>
-#include <tbb/concurrent_hash_map.h>
+#include <oneapi/tbb/concurrent_queue.h>
+#include <oneapi/tbb/concurrent_hash_map.h>
 #include "StringHashCompare.h"
 
 void writeInFiles(std::string& numResults, std::string& alphResults, tbb::concurrent_hash_map<std::basic_string<char>, int, StringHashCompare> &dict);

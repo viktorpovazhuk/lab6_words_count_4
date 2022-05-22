@@ -1,0 +1,2 @@
+Minimal time:  100320479
+Number of threads for minimal time 2

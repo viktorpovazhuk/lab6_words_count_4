@@ -10,7 +10,6 @@ void writeInFiles(std::string& numResults, std::string& alphResults, tbb::concur
     std::ofstream myfile;
     try{
     myfile.open(numResults);
-    std::cout << "New write" << std::endl;
     std::set<std::pair<std::string, int>, cmpByNum> S(dict.begin(), dict.end());
 
     for(auto& el : S) {

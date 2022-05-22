@@ -13,6 +13,7 @@
 #include <oneapi/tbb/concurrent_queue.h>
 #include <oneapi/tbb/concurrent_hash_map.h>
 #include <oneapi/tbb/flow_graph.h>
+#include <oneapi/tbb/tick_count.h>
 
 #include <iostream>
 #include <filesystem>
@@ -31,8 +32,8 @@
 using MapStrInt = std::map<std::string, int>;
 using StringTable = tbb::concurrent_hash_map<std::basic_string<char>, int, StringHashCompare>;
 
-MapStrInt index_file(std::shared_ptr<file_info_t> file);
+MapStrInt index_file(std::shared_ptr<file_info_t> file, double& ind_time);
 
-void merge_dicts(StringTable &globalDict, std::shared_ptr<MapStrInt> dict);
+void merge_dicts(StringTable &globalDict, std::shared_ptr<MapStrInt> dict, double& merg_time);
 
 #endif //SERIAL_THREAD_FUNCTIONS_H

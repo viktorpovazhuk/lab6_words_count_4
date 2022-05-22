@@ -89,6 +89,8 @@ int main(int argc, char *argv[]) {
     std::locale::global(gen("en_US.UTF-8"));
 
     StringTable global_dict;
+    double ind_time;
+    double merg_time;
 
     tbb::flow::graph index_graph;
 
@@ -97,15 +99,19 @@ int main(int argc, char *argv[]) {
 
     tbb::flow::input_node<std::shared_ptr<fs::path>> enum_files_node
             (index_graph, [&](tbb::flow_control &f_control) -> std::shared_ptr<fs::path> {
-                if (itr == end_itr) {
+                if (itr == end(itr)) {
                     f_control.stop();
+
                     return std::make_shared<fs::path>("");
                 }
                 if ((itr->path().extension() == ".zip" || itr->path().extension() == ".txt") &&
                     fs::file_size(itr->path()) <= max_file_size) {
-                    return std::make_shared<fs::path>(itr->path());
+                    std::string p = itr->path();
+                    itr++;
+                    return std::make_shared<fs::path>(p);
                 }
-                ++itr;
+                itr++;
+                return std::make_shared<fs::path>("");
             });
 
     tbb::flow::buffer_node<std::shared_ptr<fs::path>> paths_buffer_in(index_graph);
@@ -125,7 +131,7 @@ int main(int argc, char *argv[]) {
 
     index_files_node_t index_files_node(index_graph, max_index_threads,
                                         [&](std::shared_ptr<file_info_t> file, index_files_node_t::output_ports_type &outs) {
-                                            MapStrInt dict = index_file(move(file));
+                                            MapStrInt dict = index_file(move(file), ind_time);
 
                                             std::get<0>(outs).try_put(std::make_shared<MapStrInt>(move(dict)));
                                             std::get<1>(outs).try_put(tbb::flow::continue_msg{});
@@ -136,7 +142,7 @@ int main(int argc, char *argv[]) {
     tbb::flow::buffer_node<std::shared_ptr<MapStrInt>> dicts_buffer_out(index_graph);
 
     merge_dicts_node_t merge_dicts_node(index_graph, max_merge_threads, [&](std::shared_ptr<MapStrInt> dict) {
-        merge_dicts(global_dict, std::move(dict));
+        merge_dicts(global_dict, std::move(dict), merg_time);
 
         return tbb::flow::continue_msg{};
     });
@@ -159,6 +165,8 @@ int main(int argc, char *argv[]) {
     make_edge(dicts_buffer_out, merge_dicts_node);
 
     make_edge(merge_dicts_node, dicts_limiter.decrementer());
+
+    auto timeStart = get_current_time_fenced();
 
     enum_files_node.activate();
 
@@ -260,21 +268,16 @@ int main(int argc, char *argv[]) {
 
     auto totalTimeFinish = get_current_time_fenced();
 
-//    auto timeReading = to_us(timeReadingFinish - timeStart);
-//    auto timeIndexing = to_us(timeIndexingFinish - timeStart);
-//    auto timeMerging = to_us(timeMergingFinish - timeStart);
-//    auto timeWriting = to_us(timeWritingFinish - timeWritingStart);
-//    auto timeTotal = to_us(totalTimeFinish - timeStart);
-//
-//    std::cout << "Total=" << timeTotal << "\n"
-//              << "Reading=" << timeReading << "\n";
-//    if (timeMerging >= timeIndexing) {
-//        std::cout << "Finding=" << timeMerging << "\n";
-//    }
-//    else {
-//        std::cout << "Finding=" << timeIndexing << "\n";
-//    }
-//    std::cout << "Writing=" << timeWriting << endl;
+
+    auto timeIndexing = ind_time*1000000;
+    auto timeMerging = merg_time*1000000;
+    auto timeWriting = to_us(timeWritingFinish - timeWritingStart);
+    auto timeTotal = to_us(totalTimeFinish - timeStart);
+
+    std::cout << "Total=" << timeTotal << "\n";
+    std::cout << "Merging=" << timeMerging << "\n";
+    std::cout << "Indexing=" << timeIndexing << "\n";
+    std::cout << "Writing=" << timeWriting << std::endl;
 
     return 0;
 }

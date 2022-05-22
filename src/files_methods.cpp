@@ -5,7 +5,7 @@
 #include "files_methods.h"
 #include "file_info_t.h"
 
-#include <tbb/concurrent_queue.h>
+#include <oneapi/tbb/concurrent_queue.h>
 
 file_info_t read_file(const std::shared_ptr<fs::path>& path) {
     file_info_t file_info;

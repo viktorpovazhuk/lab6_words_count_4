@@ -5,8 +5,8 @@
 #include "thread_functions.h"
 #include "StringHashCompare.h"
 
-#include <tbb/concurrent_queue.h>
-#include <tbb/concurrent_hash_map.h>
+#include <oneapi/tbb/concurrent_queue.h>
+#include <oneapi/tbb/concurrent_hash_map.h>
 
 namespace fs = std::filesystem;
 
@@ -15,12 +15,11 @@ using MapStrInt = std::map<std::string, int>;
 using StringTable = tbb::concurrent_hash_map<std::basic_string<char>, int, StringHashCompare>;
 
 
-void merge_dicts(StringTable &globalDict, std::shared_ptr<MapStrInt> dict) {
-    std::cout << "New dict" << std::endl;
-        try {
+void merge_dicts(StringTable &globalDict, std::shared_ptr<MapStrInt> dict, double& merg_time) {
+    oneapi::tbb::tick_count t0 = oneapi::tbb::tick_count::now();
+    try {
             StringTable::accessor a;
             for (auto &i: *dict) {
-                std::cout << i.first <<std::endl;
                 globalDict.insert(a, i.first);
                 a->second += i.second;
                 a.release();
@@ -33,14 +32,16 @@ void merge_dicts(StringTable &globalDict, std::shared_ptr<MapStrInt> dict) {
         } catch (std::error_code &e) {
             std::cerr << "Error code " << e << ". Occurred while merging dicts" << std::endl;
         }
+    oneapi::tbb::tick_count t1 = oneapi::tbb::tick_count::now();
+    merg_time += (t1-t0).seconds();
 
 
 }
 
 
-MapStrInt index_file(std::shared_ptr<file_info_t> file){
+MapStrInt index_file(std::shared_ptr<file_info_t> file, double& ind_time){
     MapStrInt localDict;
-
+    oneapi::tbb::tick_count t0 = oneapi::tbb::tick_count::now();
     if (file->extension == ".zip") {
         struct archive *a;
         struct archive_entry *entry;
@@ -114,5 +115,7 @@ MapStrInt index_file(std::shared_ptr<file_info_t> file){
             }
         }
     }
+    oneapi::tbb::tick_count t1 = oneapi::tbb::tick_count::now();
+    ind_time += (t1-t0).seconds();
     return localDict;
 }
