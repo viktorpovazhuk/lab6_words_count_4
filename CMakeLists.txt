@@ -8,13 +8,10 @@ set(PROJECT_NAME counter)
 project(${PROJECT_NAME} C CXX) # project(${PROJECT_NAME} C CXX ASM)
 
 set(CMAKE_CXX_STANDARD 17)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 ##########################################################
 # Other variables
 ##########################################################
-
-set(TEST_EXECUTABLE tbb_tick)
 
 ##########################################################
 # User configurable options of the template
@@ -69,17 +66,12 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/thread_functions.h src/thread_functions.cpp
         src/errors.h src/file_info_t.h src/StringHashCompare.h)
 
-#add_executable(${TEST_EXECUTABLE} examples/tbb_counttick.cpp)
-
 #! Add external packages
 # options_parser requires boost::program_options library
 find_package(Boost 1.71.0 COMPONENTS program_options system locale REQUIRED)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} Boost::program_options Boost::system Boost::locale)
-
-#target_include_directories(${TEST_EXECUTABLE} PRIVATE ${Boost_INCLUDE_DIR})
-#target_link_libraries(${TEST_EXECUTABLE} Boost::program_options Boost::system)
 
 find_package(LibArchive REQUIRED)
 target_include_directories(${PROJECT_NAME} PRIVATE ${LibArchive_INCLUDE_DIRS})
@@ -97,9 +89,6 @@ message(STATUS "TBB found")
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${TBB_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} TBB::tbb TBB::tbbmalloc)
-
-#target_include_directories(${TEST_EXECUTABLE} PRIVATE ${TBB_INCLUDE_DIRS})
-#target_link_libraries(${TEST_EXECUTABLE} TBB::tbb TBB::tbbmalloc)
 
 ##########################################################
 # Fixed CMakeLists.txt part

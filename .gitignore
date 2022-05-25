@@ -484,3 +484,5 @@ MigrationBackup/
 .ionide/
 /cc-cmake-build-debug/
 /cc-cmake-build-release/
+/clion-cmake-build-debug/
+/clion-cmake-build-release/

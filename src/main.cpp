@@ -131,9 +131,9 @@ int main(int argc, char *argv[]) {
 
     index_files_node_t index_files_node(index_graph, max_index_threads,
                                         [&](std::shared_ptr<file_info_t> file, index_files_node_t::output_ports_type &outs) {
-                                            MapStrInt dict = index_file(move(file), ind_time);
+                                            MapStrInt dict = index_file(std::move(file), ind_time);
 
-                                            std::get<0>(outs).try_put(std::make_shared<MapStrInt>(move(dict)));
+                                            std::get<0>(outs).try_put(std::make_shared<MapStrInt>(std::move(dict)));
                                             std::get<1>(outs).try_put(tbb::flow::continue_msg{});
                                         });
 
@@ -171,94 +171,6 @@ int main(int argc, char *argv[]) {
     enum_files_node.activate();
 
     index_graph.wait_for_all();
-
-//    auto timeStart = get_current_time_fenced();
-//    TimePoint timeIndexingFinish, timeMergingFinish, timeReadingFinish, timeWritingFinish;
-//
-//    BoundedPathQueue paths;
-//    paths.set_capacity(maxFilenamesQSize);
-//    BoundedRFQueue filesContents;
-//    filesContents.set_capacity(maxRawFilesQSize);
-//    BoundedMapQueue dicts;
-//    dicts.set_capacity(maxDictionariesQSize);
-//
-//    std::vector<std::thread> indexingThreads;
-//    indexingThreads.reserve(numberOfIndexingThreads);
-//    std::vector<std::thread> mergingThreads;
-//    mergingThreads.reserve(numberOfMergingThreads);
-//
-//    StringTable globalDict;
-//
-//    int numOfWorkingIndexers = numberOfIndexingThreads;
-//    std::mutex numOfWorkingIndexersMutex;
-//
-//#ifdef PARALLEL
-//    std::thread filesEnumThread(findFiles, std::ref(config_file_options->indir), std::ref(paths));
-//
-//    std::thread filesReadThread(readFiles, std::ref(paths), std::ref(filesContents), maxFileSize,
-//                                std::ref(timeReadingFinish));
-//
-//    startIndexingThreads(numberOfIndexingThreads, indexingThreads, filesContents, dicts, numOfWorkingIndexers,
-//                         numOfWorkingIndexersMutex, timeIndexingFinish);
-//
-//    startMergingThreads(numberOfMergingThreads, mergingThreads, globalDict, dicts, timeMergingFinish);
-//
-//    if (filesEnumThread.joinable()) {
-//        filesEnumThread.join();
-//    }
-//
-//    if (filesReadThread.joinable()) {
-//        filesReadThread.join();
-//    }
-//
-//    try {
-//        for (auto &thread: indexingThreads) {
-//            if (thread.joinable()) {
-//                thread.join();
-//            }
-//        }
-//        for (auto &thread: mergingThreads) {
-//            if (thread.joinable()) {
-//                thread.join();
-//            }
-//        }
-//    } catch (std::error_code &e) {
-//        std::cerr << "Error code " << e << ". Occurred while joining threads." << std::endl;
-//    }
-//
-//#else
-//    paths.setMaxElements(999999);
-//    filesContents.setMaxElements(999999);
-//
-//
-//    findFiles(config_file_options->indir, paths);
-//
-//#ifdef PRINT_CONTENT
-//    auto path = paths.deque();
-//    paths.enque(path);
-//    while (path != fs::path("")) {
-//        cout << path << '\n';
-//        path = paths.deque();
-//        paths.enque(path);
-//    }
-//    cout << "--------------------------" << '\n';
-//#endif
-//
-//    readFiles(paths, filesContents, timeReadingFinish);
-//
-//#ifdef PRINT_CONTENT
-//    auto content = filesContents.deque();
-//    filesContents.enque(content);
-//    while (!content.empty()) {
-//        cout << content << '\n';
-//        content = filesContents.deque();
-//        filesContents.enque(content);
-//    }
-//    cout << "--------------------------" << '\n';
-//#endif
-//
-//    overworkFile(filesContents, wordsDict, globalDictMutex, timeFindingFinish);
-//#endif
 
     auto timeWritingStart = get_current_time_fenced();
 
